@@ -17,8 +17,11 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, PIN, NEO_GRB + NEO_KHZ800);
 // on a live circuit...if you must, connect GND first.
 
 void setup() {
+  pinMode(9, OUTPUT);  // turn on Spike Relay to lights (on DP9)
+  digitalWrite(9, HIGH);
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
+
 }
 
 void loop() {
