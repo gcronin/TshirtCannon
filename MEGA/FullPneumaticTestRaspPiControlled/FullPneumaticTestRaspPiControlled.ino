@@ -39,6 +39,7 @@ void setup()
   pinMode(solenoidB, OUTPUT);
   pinMode(compressor, OUTPUT);
   pinMode(TshirtCompressor, OUTPUT);
+  pinMode(TshirtValve, OUTPUT);
   Serial.println("Press 1 for Fire");
   Serial.println("Press A for Lift");
   Serial.println("Press B for Lower");
@@ -46,6 +47,7 @@ void setup()
   digitalWrite(solenoidA, LOW);
   digitalWrite(solenoidB, LOW);
   digitalWrite(compressor, LOW);
+  digitalWrite(TshirtValve, LOW);
   pinMode(A9, INPUT_PULLUP);      // setup 60psi switch with pullup resistor
   pinMode(A4, INPUT);  //
   pinMode(A0, INPUT);
