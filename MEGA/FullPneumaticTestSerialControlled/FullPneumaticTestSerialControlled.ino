@@ -18,6 +18,10 @@ int TshirtValve = 3;
 int incomingByte = 0;   // for incoming serial data
 int sixtyPsiPressureSwitchReading = 0;
 int oneTenPsiPressureSwitchReading = 0;
+unsigned long sixtyPsiLowPressureTime = 0;     // last time in mSec that we got a low pressure reading from the 60 psi sensor
+unsigned long oneTenPsiLowPressureTime = 0;    // last time in mSec that we got a low pressure reading from the 110 psi sensor
+unsigned long sixtyWaitTimeAfterLowPressure = 20000; // Recharge delay in mSec after we drop below required pressure
+unsigned long oneTenWaitTimeAfterLowPressure = 3000; // Recharge delay in mSec after we drop below required pressure
 
 void setup()
 {
@@ -47,17 +51,41 @@ void loop()
   oneTenPsiPressureSwitchReading = analogRead(A8);
 
   //FEEDBACK LOOP FOR PNEUMATIC LIFT
+  unsigned long oneTemPsiWaitTime = millis() - oneTenPsiLowPressureTime;
   if(oneTenPsiPressureSwitchReading < 45)
-    digitalWrite(compressor, HIGH);
+  {
+    // Need to recharge, but wait a preset period before we do
+    if(oneTemPsiWaitTime > oneTenWaitTimeAfterLowPressure)
+    {
+      digitalWrite(compressor, HIGH);
+    }
+  }
   else
-    digitalWrite(compressor, LOW);  
+  {
+    //Shut off pump
+    digitalWrite(compressor, LOW);
+    oneTenPsiLowPressureTime = millis();
+  }
   
   //FEEDBACK LOOP FOR T-SHIRT CANNON PRESSURE
+  // Once the pressure drops below 60 Psi, wait a preset
+  // period of time before we recharge to create some 
+  // hysteresis
+  unsigned long sixtyPsiWaitTime = millis() - sixtyPsiLowPressureTime;
   if(sixtyPsiPressureSwitchReading)
-    digitalWrite(TshirtCompressor, HIGH);
+  {
+    // Need to recharge, but wait a preset period before we do
+    if(sixtyPsiWaitTime > sixtyWaitTimeAfterLowPressure)
+    {
+      digitalWrite(TshirtCompressor, HIGH);
+    }
+  }
   else
+  {
     digitalWrite(TshirtCompressor, LOW);  
-    
+    sixtyPsiLowPressureTime = millis();
+  }
+  
   //SERIAL INPUT TO CONTROL FIRING AND LIFTING  
   if (Serial.available() > 0) 
   {
@@ -66,7 +94,8 @@ void loop()
      if(incomingByte == 49) { //1 pressed
          digitalWrite(TshirtValve, HIGH);
          delay(500);
-         digitalWrite(TshirtValve, LOW); }
+         digitalWrite(TshirtValve, LOW);          
+     }
      else if(incomingByte == 65) {//  A pressed
          digitalWrite(solenoidA, HIGH);
          digitalWrite(solenoidB, LOW);  }
